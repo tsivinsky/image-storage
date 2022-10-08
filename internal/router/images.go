@@ -33,19 +33,9 @@ func UploadImage(c *fiber.Ctx) error {
 	}
 	defer file.Close()
 
-	// var data []byte
-	// n, err := file.Read(data)
-	// if err != nil {
-	// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-	// 		"ok":      false,
-	// 		"message": "error reading file",
-	// 	})
-	// }
-
 	log.Print("file size: ", imageFile.Size)
 
 	fileName := getNewFileName(imageFile.Filename)
-	// err = ioutil.WriteFile(fileName, data, 0644)
 	err = c.SaveFile(imageFile, fileName)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
