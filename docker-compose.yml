@@ -11,3 +11,15 @@ services:
       - 5432:5432
     volumes:
       - ./database:/var/lib/postgresql/data
+
+  app:
+    build: .
+    restart: unless-stopped
+    container_name: image-storage-app
+    env_file:
+      - .env
+    ports:
+      - 5000:5000
+    depends_on:
+      - db
+    network_mode: host
