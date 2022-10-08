@@ -1,14 +1,11 @@
-out_dir = ./build
-out_file = $(out_dir)/app
+dev:
+	docker-compose up --build -d db
+
+start:
+	docker-compose up
 
 build:
-	go build -o $(out_file) cmd/main.go
+	docker-compose build
 
-dev:
-	go run cmd/main.go
-
-run:
-	$(out_file)
-
-clean:
-	rm -rf $(out_dir)
+stop:
+	docker-compose down

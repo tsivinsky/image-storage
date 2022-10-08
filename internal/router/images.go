@@ -2,6 +2,7 @@ package router
 
 import (
 	"fmt"
+	"image-storage/internal/db"
 	"io/ioutil"
 	"log"
 	"os"
@@ -36,7 +37,7 @@ func UploadImage(c *fiber.Ctx) error {
 	log.Print("file size: ", imageFile.Size)
 
 	fileName := getNewFileName(imageFile.Filename)
-	err = c.SaveFile(imageFile, fileName)
+	err = c.SaveFile(imageFile, filepath.Join("public/images", fileName))
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"ok":      false,
@@ -44,9 +45,20 @@ func UploadImage(c *fiber.Ctx) error {
 		})
 	}
 
+	newImage := db.Image{
+		Filename: fileName,
+	}
+	err = db.Db.Create(&newImage).Error
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"ok":      false,
+			"message": "error adding image to database",
+		})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"ok":    true,
-		"image": fileName,
+		"image": newImage,
 	})
 }
 
@@ -83,8 +95,8 @@ func getNewFileName(filename string) string {
 
 	newFileName := ""
 	for newFileName == "" {
-		possibleName := filepath.Join(basePath, fmt.Sprintf("%d-%s", time.Now().Unix(), filename))
-		if _, err := os.Stat(possibleName); os.IsExist(err) {
+		possibleName := fmt.Sprintf("%d-%s", time.Now().Unix(), filename)
+		if _, err := os.Stat(filepath.Join(basePath, possibleName)); os.IsExist(err) {
 			continue
 		}
 
