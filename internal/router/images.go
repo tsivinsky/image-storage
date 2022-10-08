@@ -90,6 +90,38 @@ func ServeImage(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).Type(filepath.Ext(filename)).Send(data)
 }
 
+func GetImageById(c *fiber.Ctx) error {
+	id, err := c.ParamsInt("id")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"ok":      false,
+			"message": err.Error(),
+		})
+	}
+
+	var image db.Image
+	err = db.Db.Find(&image, "id", id).Error
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"ok":      false,
+			"message": err.Error(),
+		})
+	}
+
+	fullUrl := fmt.Sprintf("%s/%s", c.BaseURL(), image.Filename)
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"ok": true,
+		"data": fiber.Map{
+			"id":         image.Id,
+			"filename":   image.Filename,
+			"url":        fullUrl,
+			"created_at": image.CreatedAt,
+			"updated_at": image.UpdatedAt,
+		},
+	})
+}
+
 func getNewFileName(filename string) string {
 	basePath := "public/images"
 

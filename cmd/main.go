@@ -24,8 +24,9 @@ func main() {
 
 	app := fiber.New()
 
-	app.Post("/api/images/upload", router.UploadImage)
 	app.Get("/:filename", router.ServeImage)
+	app.Post("/api/images/upload", router.UploadImage)
+	app.Get("/api/images/:id", router.GetImageById)
 
 	port := getPort(":5000")
 	log.Fatal(app.Listen(port))
