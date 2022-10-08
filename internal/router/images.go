@@ -56,7 +56,7 @@ func UploadImage(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"ok":    true,
 		"image": newImage,
 	})
