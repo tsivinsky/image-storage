@@ -1,6 +1,7 @@
 package router
 
 import (
+	"errors"
 	"fmt"
 	"image-storage/internal/db"
 	"io/ioutil"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
 
 type UploadImageBody struct {
@@ -100,9 +102,15 @@ func GetImageById(c *fiber.Ctx) error {
 	}
 
 	var image db.Image
-	err = db.Db.Find(&image, "id", id).Error
-	if err != nil {
+	err = db.Db.First(&image, "id", id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"ok":      false,
+			"message": "image not found",
+		})
+	}
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"ok":      false,
 			"message": err.Error(),
 		})
@@ -132,7 +140,13 @@ func DeleteImageById(c *fiber.Ctx) error {
 	}
 
 	var image db.Image
-	err = db.Db.Find(&image, "id", id).Error
+	err = db.Db.First(&image, "id", id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"ok":      false,
+			"message": "image not found",
+		})
+	}
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"ok":      false,
@@ -150,7 +164,7 @@ func DeleteImageById(c *fiber.Ctx) error {
 
 	err = db.Db.Delete(&image, "id", id).Error
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"ok":      false,
 			"message": err.Error(),
 		})
