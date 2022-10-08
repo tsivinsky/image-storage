@@ -131,7 +131,24 @@ func DeleteImageById(c *fiber.Ctx) error {
 		})
 	}
 
-	err = db.Db.Delete(&db.Image{}, "id", id).Error
+	var image db.Image
+	err = db.Db.Find(&image, "id", id).Error
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"ok":      false,
+			"message": err.Error(),
+		})
+	}
+
+	err = os.Remove(filepath.Join("public/images", image.Filename))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"ok":      false,
+			"message": err.Error(),
+		})
+	}
+
+	err = db.Db.Delete(&image, "id", id).Error
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"ok":      false,
