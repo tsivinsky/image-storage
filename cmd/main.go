@@ -27,6 +27,7 @@ func main() {
 	app.Get("/:filename", router.ServeImage)
 	app.Post("/api/images/upload", router.UploadImage)
 	app.Get("/api/images/:id", router.GetImageById)
+	app.Delete("/api/images/:id", router.DeleteImageById)
 
 	port := getPort(":5000")
 	log.Fatal(app.Listen(port))

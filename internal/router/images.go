@@ -122,6 +122,29 @@ func GetImageById(c *fiber.Ctx) error {
 	})
 }
 
+func DeleteImageById(c *fiber.Ctx) error {
+	id, err := c.ParamsInt("id")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"ok":      false,
+			"message": err.Error(),
+		})
+	}
+
+	err = db.Db.Delete(&db.Image{}, "id", id).Error
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"ok":      false,
+			"message": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"ok":      true,
+		"message": "image deleted successfully",
+	})
+}
+
 func getNewFileName(filename string) string {
 	basePath := "public/images"
 
